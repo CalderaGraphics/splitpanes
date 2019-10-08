@@ -352,7 +352,7 @@ export default {
             'max': (typeof vm.maxSize === 'undefined') ? 100 : Number.parseFloat(vm.maxSize),
             size
           })
-        } else { // Splitter
+        } else if (child.classList.contains('splitpanes__splitter')) { // Splitter
           if (!lastIsPane) {
             // The previous child is already a splitter, so we need to remove this one.
             child.onmousedown = undefined
@@ -381,23 +381,19 @@ export default {
           if (this.dblClickSplitter) {
             child.ondblclick = (event) => this.onSplitterDblClick(event, splitterIndex)
           }
+        } else {
+          throw new Error('The following splitpanes content must be wrapped into a `pane` component: ', child)
         }
       });
 
       // Remove the trailing splitter if any.
-      [...this.container.children].reverse().some((child) => {
-        if (child.classList.contains('splitpanes__pane')) {
-          return true
-        }
-        if (child.classList.contains('splitpanes__splitter')) {
-          child.onmousedown = undefined
-          child.onclick = undefined
-          child.ondblclick = undefined
-          child.remove()
-          return true
-        }
-        return false
-      })
+      const lastChild = [...this.container.children].pop();
+      if (lastChild && lastChild.classList.contains('splitpanes__splitter')) {
+        lastChild.onmousedown = undefined
+        lastChild.onclick = undefined
+        lastChild.ondblclick = undefined
+        lastChild.remove()
+      }
 
       if (this.panes.length > nbPanes) {
         // There are less panes than before, so we need to remove the unused ones from `this.panes`.
